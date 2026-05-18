@@ -1,10 +1,12 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
+from typing import Literal
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
+    DB_ENGINE: Literal["postgresql", "mysql"] = "postgresql"
     DB_USER: str = "postgres"
     DB_PASSWORD: str
     DB_HOST: str = "localhost"
@@ -13,7 +15,14 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+        engine = self.DB_ENGINE
+        if engine == "mysql":
+            driver = "mysql+pymysql"
+        else:
+            driver = "postgresql"
+
+        return f"{driver}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
