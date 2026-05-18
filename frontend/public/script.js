@@ -1,4 +1,6 @@
-const API = `${window.location.protocol}//${window.location.hostname}:8000`;
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'https://ecodrop-production.up.railway.app';
 const STORAGE_TOKEN_KEY = "access_token";
 const STORAGE_USER_KEY = "ecodrop_user";
 const STORAGE_PROFILE_PHOTO_PREFIX = "ecodrop_profile_photo_";

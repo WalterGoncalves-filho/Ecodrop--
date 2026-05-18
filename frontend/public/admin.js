@@ -1,4 +1,6 @@
-const API_BASE = window.ENV?.API_BASE || 'http://localhost:8000';
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'https://ecodrop-production.up.railway.app';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const token = () => localStorage.getItem('admin_token');
