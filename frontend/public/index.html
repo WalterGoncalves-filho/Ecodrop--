@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoDrop</title>
+<link rel="icon" type="image/x-icon" sizes="16x16" href="/assets/16.ico"/>
+<link rel="icon" type="image/x-icon" sizes="32x32" href="/assets/32.ico"/>
+<link rel="icon" type="image/x-icon" sizes="48x48" href="/assets/48.ico"/>
+<link rel="icon" type="image/x-icon" sizes="64x64" href="/assets/64.ico"/>
+<link rel="icon" type="image/x-icon" sizes="128x128" href="/assets/128.ico"/>
+<link rel="icon" type="image/x-icon" sizes="256x256" href="/assets/256.ico"/>
+<link rel="apple-touch-icon" href="/assets/128.ico"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- SPLASH -->
+  <div class="screen active" id="splash">
+    <div class="splash-circles"><div class="sc sc1"></div><div class="sc sc2"></div><div class="sc sc3"></div></div>
+    <div class="splash-body">
+      <img src="assets/Logo.png" alt="EcoDrop" class="splash-logo"/>
+      <div class="splash-pill">Recicle · Ganhe · Preserve</div>
+      <div class="splash-desc">Leve seu material reciclável aos pontos de coleta e ganhe Eco Points para trocar em descontos e serviços parceiros.</div>
+      <div class="splash-btns">
+        <button class="btn-primary" onclick="goTo('login')">Entrar na minha conta</button>
+        <button class="btn-ghost" onclick="goTo('cadastro')">Criar conta gratuita</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="login">
+    <div class="auth-hd">
+      <button class="back-btn" onclick="goTo('splash')">←</button>
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>Bem-vindo de volta 👋</h1><p>Entre na sua conta EcoDrop</p></div>
+      </div>
+    </div>
+    <div class="auth-body">
+      <div class="fg"><label>E-MAIL</label><input type="email" placeholder="seu@email.com" id="l-email"/></div>
+      <div class="fg"><label>SENHA</label><input type="password" placeholder="••••••••" id="l-senha"/></div>
+      <button class="btn-primary" onclick="fazerLogin()" style="margin-top:6px">Entrar</button>
+      <div class="divider">ou</div>
+      <div class="auth-ft">Não tem conta? <button class="link-btn" onclick="goTo('cadastro')">Cadastre-se grátis</button></div>
+    </div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div class="screen" id="cadastro">
+    <div class="auth-hd">
+      <button class="back-btn" onclick="goTo('splash')">←</button>
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>Criar conta 🌱</h1><p>Comece a reciclar e acumular Eco Points</p></div>
+      </div>
+    </div>
+    <div class="auth-body">
+      <div class="fr">
+        <div class="fg"><label>NOME</label><input type="text" placeholder="Nome" id="c-nome"/></div>
+        <div class="fg"><label>SOBRENOME</label><input type="text" placeholder="Sobrenome" id="c-sob"/></div>
+      </div>
+      <div class="fg"><label>CPF</label><input type="text" placeholder="000.000.000-00" id="c-cpf" maxlength="14" oninput="mCPF(this)"/></div>
+      <div class="fg"><label>E-MAIL</label><input type="email" placeholder="seu@email.com" id="c-email"/></div>
+      <div class="fg"><label>SENHA</label><input type="password" placeholder="Mínimo 8 caracteres" id="c-senha"/></div>
+      <div class="fg"><label>CONFIRMAÇÃO DE SENHA</label><input type="password" placeholder="Repita a senha" id="c-senha-conf"/></div>
+      <button class="btn-primary" onclick="fazerCadastro()" style="margin-top:6px">Criar minha conta</button>
+      <div class="auth-ft" style="margin-top:12px">Já tem conta? <button class="link-btn" onclick="goTo('login')">Entrar</button></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="home">
+    <div class="home-hd">
+      <div class="home-top">
+        <div class="home-top-left">
+          <img src="assets/Logo.png" alt="EcoDrop" class="home-logo"/>
+          <div>
+            <div class="home-greet">Olá, <span id="home-nome">Usuário</span> 👋</div>
+            <div class="home-name">Sua floresta agradece!</div>
+          </div>
+        </div>
+        <div class="notif-btn" onclick="goTo('atendimento')">🔔<div class="notif-dot"></div></div>
+      </div>
+    </div>
+    <div class="voucher-card">
+      <div class="vc-lbl">Eco Points Disponíveis</div>
+      <div class="vc-val"><span id="saldo-h">0</span><span class="vc-pts-unit"> pts</span></div>
+      <div class="vc-sub" id="home-summary">Prontos para usar · Nível 1 🌿</div>
+      <div class="vc-badge"><div class="bi">♻️</div><div class="bt">Ativo</div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-c"><div class="sn" id="stat-entregas">0</div><div class="sl">Entregas</div></div>
+      <div class="stat-c"><div class="sn" id="stat-reciclado">0</div><div class="sl">Pts Acumulados</div></div>
+      <div class="stat-c"><div class="sn" id="stat-nivel">1</div><div class="sl">Nível</div></div>
+    </div>
+    <div class="hscroll">
+      <div class="sec-t">🎯 Missões Ativas</div>
+      <div id="home-missions">
+        <div class="empty-state">Carregando missões...</div>
+      </div>
+      <div class="sec-t">🔥 Bônus do Mês</div>
+      <div class="mc">
+        <div class="mi" style="background:#fff3e0">🏆</div>
+        <div class="minfo"><h3>Meta: 30 reciclagens em Abril</h3><div class="pb"><div class="pf" style="width:38%"></div></div><p>12 / 30 itens — Bônus 20 pts</p></div>
+        <div class="mpts">+20 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div class="screen" id="mapa">
+    <div class="mapa-hd">
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>🗺️ Pontos de Coleta</h1><p>Leve, recicle e ganhe Eco Points</p></div>
+      </div>
+    </div>
+    <div class="filtros">
+      <div class="chip active" data-slug="" onclick="setChip(this)">Todos</div>
+      <div class="chip" data-slug="plastico" onclick="setChip(this)">♻️ Plástico</div>
+      <div class="chip" data-slug="vidro" onclick="setChip(this)">🔵 Vidro</div>
+      <div class="chip" data-slug="metal" onclick="setChip(this)">🥫 Metal</div>
+      <div class="chip" data-slug="papel" onclick="setChip(this)">📄 Papel</div>
+      <div class="chip" data-slug="eletronico" onclick="setChip(this)">🔋 Eletrônico</div>
+    </div>
+    <div class="fake-map">
+      <div class="mtex"></div>
+      <div class="mr mrh" style="top:68px"></div>
+      <div class="mr mrh" style="top:136px"></div>
+      <div class="mr mrv" style="left:96px"></div>
+      <div class="mr mrv" style="left:256px"></div>
+      <div class="mpin verde" style="top:40px;left:58px" onclick="openPonto('ecoponto-central')"><div class="pi">♻️</div></div>
+      <div class="mpin azul"  style="top:92px;left:215px" onclick="openPonto('coleta-norte')"><div class="pi">🔵</div></div>
+      <div class="mpin terra" style="top:144px;left:66px" onclick="openPonto('ponto-eletronico-sul')"><div class="pi">🔋</div></div>
+      <div class="mpin verde" style="top:46px;left:295px" onclick="openPonto('ecoponto-leste')"><div class="pi">♻️</div></div>
+      <div class="mpin azul"  style="top:150px;left:282px" onclick="openPonto('shopping-coleta')"><div class="pi">🥫</div></div>
+      <div class="medot" style="top:104px;left:152px"></div>
+      <div class="mlbl">📍 Você está aqui</div>
+    </div>
+    <div class="pscroll" id="points-list">
+      <div class="empty-state">Carregando pontos de coleta...</div>
+    </div>
+  </div>
+
+  <!-- CARTEIRA -->
+  <div class="screen" id="carteira">
+    <div class="cart-hd">
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>💳 Minha Carteira</h1><p>Seus Eco Points acumulados</p></div>
+      </div>
+    </div>
+    <div class="cart-saldo">
+      <div class="cs-lbl">Eco Points Disponíveis</div>
+      <div class="cs-val"><span id="saldo-c">0</span><span class="vc-pts-unit"> pts</span></div>
+      <div class="cs-sub" id="wallet-summary">Prontos para usar · Nível 1 🌿</div>
+      <div class="cs-acts">
+        <button class="cs-btn" onclick="openRedeemPartners()">💳 Usar Eco Points</button>
+        <button class="cs-btn" onclick="goTo('parceiros');setNav('parceiros')">🏪 Ver Parceiros</button>
+      </div>
+    </div>
+    <div class="nivel-wrap">
+      <div class="nivel-top"><h3 id="wallet-level-title">🌿 Nível 1 — Iniciante Verde</h3><span id="wallet-level-progress">0%</span></div>
+      <div class="nbg"><div class="nfill" id="wallet-level-bar" style="width:0%"></div></div>
+      <div class="ndesc" id="wallet-level-description">Faça sua primeira entrega confirmada para começar a subir de nível.</div>
+    </div>
+    <div class="cscroll" id="wallet-history">
+      <div class="sec-t">📋 Histórico de Transações</div>
+      <div class="empty-state">Ainda não há transações registradas na sua carteira.</div>
+    </div>
+  </div>
+  <!-- PARCEIROS -->
+  <div class="screen" id="parceiros">
+    <div class="parc-hd">
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>🏪 Parceiros</h1><p>Use seus Eco Points nestes estabelecimentos</p></div>
+      </div>
+    </div>
+    <div class="pscr2" id="partners-list">
+      <div class="empty-state">Carregando parceiros...</div>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="screen" id="perfil">
+    <div class="perf-hd">
+      <div class="hd-row" style="justify-content:center;margin-bottom:14px">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+      </div>
+      <button class="perf-av" type="button" onclick="openProfilePhotoPicker()" aria-label="Alterar foto de perfil">
+        <span id="profile-photo-placeholder">🧑‍🌿</span>
+        <img id="profile-photo-preview" alt="Foto de perfil"/>
+      </button>
+      <input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp" onchange="alterarFotoPerfil(event)" hidden/>
+      <div class="profile-photo-actions">
+        <button type="button" onclick="openProfilePhotoPicker()">Alterar foto</button>
+        <button type="button" id="profile-photo-remove" onclick="removerFotoPerfil()">Remover</button>
+      </div>
+      <div class="perf-nome" id="perf-nome">Usuário</div>
+      <div class="perf-nivel" id="perf-nivel">Nível 1 · Iniciante Verde 🌿</div>
+    </div>
+    <div class="perf-scr">
+      <div class="info-c">
+        <div class="ic-lbl">DADOS PESSOAIS</div>
+        <div class="info-r"><div class="info-ico">👤</div><div><h4 id="p-nome">Nome Completo</h4><p>Nome cadastrado</p></div></div>
+        <div class="info-r"><div class="info-ico">📧</div><div><h4 id="p-email">email@email.com</h4><p>E-mail</p></div></div>
+        <div class="info-r"><div class="info-ico">🆔</div><div><h4 id="p-cpf">000.000.000-00</h4><p>CPF</p></div></div>
+        <div class="info-r" onclick="openPhoneModal()"><div class="info-ico">📱</div><div><h4 id="p-telefone">Não informado</h4><p>Celular</p></div></div>
+        <div class="info-r" onclick="openAddressModal()"><div class="info-ico">📍</div><div><h4 id="p-endereco">Não informado</h4><p>Endereço</p></div></div>
+      </div>
+      <div class="info-c" style="margin-top:12px">
+        <div class="ic-lbl">MINHA CONTA</div>
+        <div class="info-r" onclick="showToast('🔔 Notificações configuradas!')"><div class="info-ico">🔔</div><div><h4>Notificações</h4><p>Vouchers e novidades</p></div></div>
+        <div class="info-r" onclick="openProfileEditModal()"><div class="info-ico">✏️</div><div><h4>Editar dados</h4><p>Atualizar informações da sua conta</p></div></div>
+        <div class="info-r" onclick="openPasswordModal()"><div class="info-ico">🔒</div><div><h4>Segurança</h4><p>Alterar senha com confirmação</p></div></div>
+        <div class="info-r" onclick="showToast('📄 Termos de Uso abertos!')"><div class="info-ico">📄</div><div><h4>Termos de Uso</h4><p>Política de privacidade</p></div></div>
+      </div>
+      <button class="logout-btn" onclick="fazerLogout()">Sair da conta</button>
+    </div>
+  </div>
+
+  <!-- ATENDIMENTO -->
+  <div class="screen" id="atendimento">
+    <div class="atend-hd">
+      <div class="hd-row">
+        <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
+        <div><h1>🤝 Auto Atendimento</h1><p>Como podemos te ajudar?</p></div>
+      </div>
+    </div>
+    <div class="atend-scr">
+      <div class="atend-card" onclick="goTo('carteira');setNav('carteira')">
+        <div class="info-ico">💳</div>
+        <div class="atend-info"><h4>Minha conta</h4><p>Ver saldo de Eco Points e nível atual</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card" onclick="openDeliveriesModal()">
+        <div class="info-ico">📋</div>
+        <div class="atend-info"><h4>Histórico de reciclagens</h4><p>Consultar suas entregas realizadas</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card" onclick="goTo('mapa');setNav('mapa')">
+        <div class="info-ico">🗺️</div>
+        <div class="atend-info"><h4>Pontos de coleta</h4><p>Ver pontos disponíveis na sua cidade</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card" onclick="openAgenda('ecoponto-central')">
+        <div class="info-ico">📅</div>
+        <div class="atend-info"><h4>Agendar entrega</h4><p>Escolha um horário para levar seu material</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card" onclick="openMeusAgendamentos()">
+        <div class="info-ico">🗓️</div>
+        <div class="atend-info"><h4>Meus agendamentos</h4><p>Acompanhe e cancele seus agendamentos</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card" onclick="goTo('parceiros');setNav('parceiros')">
+        <div class="info-ico">🏪</div>
+        <div class="atend-info"><h4>Parceiros</h4><p>Onde usar seus Eco Points</p></div>
+        <div class="parr">›</div>
+      </div>
+
+      <div class="atend-card" onclick="openSupportModal()">
+        <div class="info-ico">🤝</div>
+        <div class="atend-info"><h4>Falar com suporte</h4><p>Abrir ticket e acompanhar atendimento</p></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="atend-card operator-only" id="atend-operator-card" onclick="openOperatorModal()" style="display:none">
+        <div class="info-ico">🧾</div>
+        <div class="atend-info"><h4>Operação do ponto</h4><p>Revisar entregas pendentes e creditar usuários</p></div>
+        <div class="parr">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PERFIL -->
+  <div class="modal-ov" id="mod-profile-edit" onclick="closeProfileEditModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">👤 Dados pessoais</div>
+      <h2>Atualizar perfil</h2>
+      <p>Mantenha seus dados atualizados. Para trocar o e-mail, confirme sua senha atual.</p>
+      <div class="fr">
+        <div class="fg"><label>NOME</label><input type="text" id="up-nome" placeholder="Nome"/></div>
+        <div class="fg"><label>SOBRENOME</label><input type="text" id="up-sobrenome" placeholder="Sobrenome"/></div>
+      </div>
+      <div class="fg"><label>E-MAIL</label><input type="email" id="up-email" placeholder="seu@email.com"/></div>
+      <div class="fg"><label>SENHA ATUAL</label><input type="password" id="up-senha-atual" placeholder="Obrigatória se alterar o e-mail"/></div>
+      <div class="modal-help">Informe a senha atual apenas quando quiser trocar o e-mail.</div>
+      <button class="btn-primary" id="up-save-btn" onclick="salvarPerfil()">Salvar alterações</button>
+      <button class="btn-sec" onclick="closeProfileEditModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL SENHA -->
+  <div class="modal-ov" id="mod-password" onclick="closePasswordModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">🔒 Segurança</div>
+      <h2>Alterar senha</h2>
+      <p>Confirme sua senha atual e informe uma nova senha com pelo menos 8 caracteres.</p>
+      <div class="fg"><label>SENHA ATUAL</label><input type="password" id="pw-atual" placeholder="Digite sua senha atual"/></div>
+      <div class="fg"><label>NOVA SENHA</label><input type="password" id="pw-nova" placeholder="Mínimo 8 caracteres"/></div>
+      <div class="fg"><label>CONFIRMAR NOVA SENHA</label><input type="password" id="pw-confirmacao" placeholder="Repita a nova senha"/></div>
+      <button class="btn-primary" id="pw-save-btn" onclick="alterarSenha()">Atualizar senha</button>
+      <button class="btn-sec" onclick="closePasswordModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ENDEREÇO -->
+  <div class="modal-ov" id="mod-address" onclick="closeAddressModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📍 Endereço</div>
+      <h2>Atualizar endereço</h2>
+      <p>Mantenha seu endereço atualizado para facilitar agendamentos e entregas.</p>
+      <div class="fg"><label>CEP</label><input type="text" id="addr-cep" placeholder="00000-000" maxlength="9" oninput="mCEP(this)" onblur="preencherEnderecoPorCEP()"/></div>
+      <div class="modal-help">💡 Digite o CEP e os campos serão preenchidos automaticamente</div>
+      <div class="fg"><label>RUA</label><input type="text" id="addr-rua" placeholder="Nome da rua"/></div>
+      <div class="fr">
+        <div class="fg"><label>NÚMERO</label><input type="text" id="addr-numero" placeholder="123"/></div>
+        <div class="fg"><label>BAIRRO</label><input type="text" id="addr-bairro" placeholder="Nome do bairro"/></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>CIDADE</label><input type="text" id="addr-cidade" placeholder="Manaus"/></div>
+        <div class="fg"><label>ESTADO</label>
+          <select id="addr-estado">
+            <option>AM</option><option>PA</option><option>RO</option><option>AC</option><option>RR</option>
+            <option>AP</option><option>TO</option><option>SP</option><option>RJ</option><option>MG</option>
+            <option>BA</option><option>PR</option><option>RS</option><option>SC</option><option>GO</option>
+            <option>DF</option><option>MT</option><option>MS</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" id="addr-save-btn" onclick="salvarEndereco()">Salvar endereço</button>
+      <button class="btn-sec" onclick="closeAddressModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL CELULAR -->
+  <div class="modal-ov" id="mod-phone" onclick="closePhoneModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📱 Celular</div>
+      <h2>Atualizar celular</h2>
+      <p>Mantenha seu número de celular atualizado para contato.</p>
+      <div class="fg"><label>CELULAR</label><input type="text" id="phone-telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mTel(this)"/></div>
+      <button class="btn-primary" id="phone-save-btn" onclick="salvarCelular()">Salvar celular</button>
+      <button class="btn-sec" onclick="closePhoneModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-partner-benefits" onclick="closeModal('mod-partner-benefits')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="partner-benefits-tag">🏪 Parceiro</div>
+      <h2 id="partner-benefits-title">Escolha um benefício</h2>
+      <p id="partner-benefits-description">Use seu VoucherVerde com benefícios reais.</p>
+      <div class="section-stack" id="partner-benefits-list">
+        <div class="empty-state">Carregando benefícios...</div>
+      </div>
+      <button class="btn-sec" onclick="closeModal('mod-partner-benefits')">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-support" onclick="closeModal('mod-support')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">🤝 Atendimento</div>
+      <h2>Seus tickets</h2>
+      <p>Abra um chamado e acompanhe as respostas sem sair do app.</p>
+      <div class="section-stack" id="support-ticket-list">
+        <div class="empty-state">Carregando tickets...</div>
+      </div>
+      <button class="btn-primary" onclick="openSupportForm()">Abrir novo ticket</button>
+      <button class="btn-sec" onclick="closeModal('mod-support')">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-support-form" onclick="closeModal('mod-support-form')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">✍️ Novo ticket</div>
+      <h2>Falar com suporte</h2>
+      <p>Descreva seu problema com o máximo de contexto possível.</p>
+      <div class="fg">
+        <label>CATEGORIA</label>
+        <select id="sup-category">
+          <option value="Conta">Conta</option>
+          <option value="Carteira">Carteira</option>
+          <option value="Entrega">Entrega</option>
+          <option value="Parceiros">Parceiros</option>
+          <option value="Aplicativo">Aplicativo</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="fg"><label>ASSUNTO</label><input type="text" id="sup-subject" placeholder="Ex.: Não consegui resgatar meu voucher"/></div>
+      <div class="fg">
+        <label>PRIORIDADE</label>
+        <select id="sup-priority">
+          <option value="medium">Média</option>
+          <option value="high">Alta</option>
+          <option value="low">Baixa</option>
+        </select>
+      </div>
+      <div class="fg"><label>DESCRIÇÃO</label><textarea id="sup-description" placeholder="Explique o que aconteceu e o que você esperava que acontecesse."></textarea></div>
+      <button class="btn-primary" id="sup-create-btn" onclick="submitSupportTicket()">Enviar ticket</button>
+      <button class="btn-sec" onclick="closeModal('mod-support-form')">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-support-detail" onclick="closeModal('mod-support-detail')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="support-detail-status">Ticket</div>
+      <h2 id="support-detail-title">Detalhes do ticket</h2>
+      <p id="support-detail-meta">Acompanhe a conversa com o suporte.</p>
+      <div class="ticket-thread" id="support-thread">
+        <div class="empty-state">Carregando interações...</div>
+      </div>
+      <div class="fg"><label>RESPONDER</label><textarea id="sup-reply" placeholder="Escreva uma atualização para o suporte."></textarea></div>
+      <button class="btn-primary" id="sup-reply-btn" onclick="sendSupportReply()">Enviar resposta</button>
+      <button class="btn-sec" onclick="closeModal('mod-support-detail')">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-deliveries" onclick="closeModal('mod-deliveries')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">♻️ Reciclagens</div>
+      <h2>Minhas entregas</h2>
+      <p>Acompanhe o status das suas reciclagens e registre novas entregas.</p>
+      <div class="section-stack" id="delivery-list">
+        <div class="empty-state">Carregando entregas...</div>
+      </div>
+      <button class="btn-primary" onclick="openDeliveryForm()">Registrar nova entrega</button>
+      <button class="btn-sec" onclick="closeModal('mod-deliveries')">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-delivery-form" onclick="closeModal('mod-delivery-form')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📦 Nova entrega</div>
+      <h2>Registrar materiais</h2>
+      <p>Informe o ponto e os materiais entregues para aguardar revisão do operador.</p>
+      <div class="fg">
+        <label>PONTO DE COLETA</label>
+        <select id="del-point" onchange="onDeliveryPointChange()"></select>
+      </div>
+      <div class="fg">
+        <label>AGENDAMENTO</label>
+        <select id="del-appointment"></select>
+      </div>
+      <div class="section-stack" id="del-items">
+        <div class="empty-state">Selecione um ponto para ver os materiais aceitos.</div>
+      </div>
+      <div class="fg"><label>OBSERVAÇÕES</label><textarea id="del-notes" placeholder="Informações extras para o operador, se necessário."></textarea></div>
+      <button class="btn-primary" id="del-save-btn" onclick="submitDelivery()">Enviar para revisão</button>
+      <button class="btn-sec" onclick="closeModal('mod-delivery-form')">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-operator" onclick="closeModal('mod-operator')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">🧾 Operação</div>
+      <h2>Entregas pendentes</h2>
+      <p>Confirme ou rejeite as entregas aguardando revisão no seu ponto.</p>
+      <div class="section-stack" id="operator-delivery-list">
+        <div class="empty-state">Carregando entregas pendentes...</div>
+      </div>
+      <button class="btn-sec" onclick="closeModal('mod-operator')">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-ov" id="mod-operator-review" onclick="closeModal('mod-operator-review')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">✅ Revisão</div>
+      <h2>Revisar entrega</h2>
+      <p id="op-review-meta">Confirme os materiais recebidos ou rejeite a entrega com observação.</p>
+      <div class="section-stack" id="op-review-summary">
+        <div class="empty-state">Selecione uma entrega para revisar.</div>
+      </div>
+      <div class="fg"><label>OBSERVAÇÃO DO OPERADOR</label><textarea id="op-review-notes" placeholder="Opcional para confirmação, recomendado para rejeição."></textarea></div>
+      <div class="inline-actions">
+        <button class="btn-primary" id="op-confirm-btn" onclick="submitOperatorReview('confirmed')">Confirmar entrega</button>
+        <button class="btn-sec" id="op-reject-btn" onclick="submitOperatorReview('rejected')">Rejeitar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bnav">
+    <div class="nav-item active" id="nav-home" onclick="goTo('home');setNav('home')"><div class="nav-ico">🏠</div><div class="nav-lbl">Início</div></div>
+    <div class="nav-item" id="nav-mapa" onclick="goTo('mapa');setNav('mapa')"><div class="nav-ico">🗺️</div><div class="nav-lbl">Mapa</div></div>
+    <div class="nav-item" id="nav-carteira" onclick="goTo('carteira');setNav('carteira')"><div class="nav-ico">💳</div><div class="nav-lbl">Carteira</div></div>
+    <div class="nav-item" id="nav-atendimento" onclick="goTo('atendimento');setNav('atendimento')"><div class="nav-ico">🤝</div><div class="nav-lbl">Serviços</div></div>
+    <div class="nav-item" id="nav-perfil" onclick="goTo('perfil');setNav('perfil')"><div class="nav-ico">👤</div><div class="nav-lbl">Perfil</div></div>
+  </div>
+
+  <!-- MODAL MISSÃO -->
+  <div class="modal-ov" id="mod-missao" onclick="closeModal('mod-missao')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="mm-tag"></div>
+      <h2 id="mm-titulo"></h2>
+      <p id="mm-desc"></p>
+      <div class="mmats" id="mm-mats"></div>
+      <button class="btn-primary" onclick="closeModal('mod-missao');openAgenda('ecoponto-central')">📅 Agendar Entrega</button>
+      <button class="btn-sec" onclick="closeModal('mod-missao')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- MODAL PONTO -->
+  <div class="modal-ov" id="mod-ponto" onclick="closeModal('mod-ponto')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="mp-dist"></div>
+      <h2 id="mp-nome"></h2>
+      <p id="mp-end"></p>
+      <div class="mmats" id="mp-mats"></div>
+      <button class="btn-primary" id="mp-btn">📅 Agendar Entrega</button>
+      <button class="btn-sec" id="mp-delivery-btn">📦 Registrar Entrega</button>
+      <button class="btn-sec" onclick="closeModal('mod-ponto')">Fechar</button>
+    </div>
+  </div>
+  <!-- MODAL AGENDAMENTO -->
+  <div class="modal-ov" id="mod-agenda" onclick="closeModal('mod-agenda')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📅 Agendamento</div>
+      <h2 id="ag-nome">Escolha um horário</h2>
+      <p>Selecione o melhor dia e horário para levar seu material reciclável ao ponto.</p>
+      <div id="ag-slots"></div>
+      <button class="btn-primary" id="ag-confirm-btn" style="margin-top:8px" onclick="confirmarAgenda()">✅ Confirmar Agendamento</button>
+      <button class="btn-sec" onclick="closeModal('mod-agenda')">Cancelar</button>
+    </div>
+  </div>
+  <!-- MODAL MEUS AGENDAMENTOS -->
+  <div class="modal-ov" id="mod-agendamentos" onclick="closeModal('mod-agendamentos')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">🗓️ Agendamentos</div>
+      <h2>Meus agendamentos</h2>
+      <p>Acompanhe e gerencie seus agendamentos de coleta.</p>
+      <div class="section-stack" id="meus-agendamentos-list">
+        <div class="empty-state">Carregando...</div>
+      </div>
+      <button class="btn-primary" onclick="closeModal('mod-agendamentos');openAgenda('ecoponto-central')">+ Novo agendamento</button>
+      <button class="btn-sec" onclick="closeModal('mod-agendamentos')">Fechar</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="api.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
