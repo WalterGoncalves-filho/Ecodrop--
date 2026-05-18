@@ -1,4 +1,4 @@
-const API = `${location.protocol}//${location.hostname}:8000`;
+const API_BASE = window.ENV?.API_BASE || 'http://localhost:8000';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const token = () => localStorage.getItem('admin_token');

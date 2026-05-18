@@ -1,4 +1,4 @@
-const API_BASE = `https://ecodrop-production.up.railway.app`;
+const API_BASE = window.ENV?.API_BASE || 'http://localhost:8000';
 
 const api = {
   _getToken() { return localStorage.getItem('access_token'); },
