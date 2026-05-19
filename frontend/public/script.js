@@ -1938,34 +1938,28 @@ function fecharAlertaCpf() { /* não usado com SweetAlert2 */ }
 // ── Termos de Uso ─────────────────────────────────────────────────────────────
 function abrirTermosDeUso() {
   Swal.fire({
-    title: "📄 Termos de Uso & Política de Privacidade",
+    title: "📄 Termos de Uso",
     html: `
-      <div style="text-align:left;font-size:.83rem;line-height:1.7;color:#333;max-height:55vh;overflow-y:auto;padding-right:4px">
-        <h4 style="color:#0a2e1f;margin-bottom:6px">1. Sobre o EcoDrop</h4>
-        <p>O EcoDrop é uma plataforma de reciclagem que conecta usuários a pontos de coleta, recompensando boas práticas ambientais com EcoPoints (VoucherVerde).</p>
-
-        <h4 style="color:#0a2e1f;margin:14px 0 6px">2. Uso da plataforma</h4>
-        <p>O uso é pessoal e intransferível. É proibido cadastrar informações falsas, utilizar a plataforma para fins ilícitos ou tentar manipular o sistema de pontuação.</p>
-
-        <h4 style="color:#0a2e1f;margin:14px 0 6px">3. EcoPoints e Vouchers</h4>
-        <p>Os EcoPoints são créditos virtuais concedidos por entregas validadas. Não possuem valor monetário direto e só podem ser utilizados nos parceiros cadastrados na plataforma.</p>
-
-        <h4 style="color:#0a2e1f;margin:14px 0 6px">4. Dados pessoais (LGPD)</h4>
-        <p>Coletamos nome, e-mail, CPF e endereço para identificação e operação do serviço. Seus dados não são vendidos a terceiros. Você pode solicitar exclusão da conta pelo suporte.</p>
-
-        <h4 style="color:#0a2e1f;margin:14px 0 6px">5. Agendamentos</h4>
-        <p>O não comparecimento a agendamentos confirmados pode resultar em restrição temporária de novos agendamentos.</p>
-
-        <h4 style="color:#0a2e1f;margin:14px 0 6px">6. Alterações</h4>
-        <p>Estes termos podem ser atualizados. Notificaremos usuários sobre mudanças relevantes pelo aplicativo.</p>
-
-        <p style="margin-top:16px;color:#888;font-size:.78rem">Última atualização: maio de 2026 · contato@ecodrop.app</p>
+      <div style="text-align:left;font-size:.82rem;line-height:1.6;color:#333;max-height:40vh;overflow-y:auto;padding-right:6px">
+        <h4 style="color:#0a2e1f;margin-bottom:4px">1. Sobre o EcoDrop</h4>
+        <p>Plataforma de reciclagem que conecta usuários a pontos de coleta, recompensando boas práticas com EcoPoints (VoucherVerde).</p>
+        <h4 style="color:#0a2e1f;margin:10px 0 4px">2. Uso da plataforma</h4>
+        <p>Uso pessoal e intransferível. Proibido cadastrar informações falsas ou manipular o sistema de pontuação.</p>
+        <h4 style="color:#0a2e1f;margin:10px 0 4px">3. EcoPoints e Vouchers</h4>
+        <p>Créditos virtuais por entregas validadas, sem valor monetário direto. Utilizáveis apenas nos parceiros cadastrados.</p>
+        <h4 style="color:#0a2e1f;margin:10px 0 4px">4. Dados pessoais (LGPD)</h4>
+        <p>Coletamos nome, e-mail, CPF e endereço para operação do serviço. Dados não são vendidos. Exclusão de conta via suporte.</p>
+        <h4 style="color:#0a2e1f;margin:10px 0 4px">5. Agendamentos</h4>
+        <p>Não comparecimento pode resultar em restrição temporária de novos agendamentos.</p>
+        <h4 style="color:#0a2e1f;margin:10px 0 4px">6. Alterações</h4>
+        <p>Termos podem ser atualizados com notificação pelo aplicativo.</p>
+        <p style="margin-top:12px;color:#aaa;font-size:.75rem">Atualizado em maio de 2026 · contato@ecodrop.app</p>
       </div>
     `,
     confirmButtonText: "Li e entendi",
     confirmButtonColor: "#145c3a",
     background: "#fff",
-    width: "min(520px, 95vw)",
+    width: "min(480px, 92vw)",
     customClass: { popup: "swal-ecodrop" },
   });
 }
