@@ -229,13 +229,12 @@ document.getElementById('btn-confirmar').addEventListener('click', async () => {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    const tabs = ['agendamentos', 'suporte'];
-    b.classList.toggle('active', tabs[i] === name);
-  });
+  const tabs = ['agendamentos', 'suporte', 'usuarios'];
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', tabs[i] === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
   if (name === 'suporte') carregarTickets('');
+  if (name === 'usuarios') buscarUsuarios();
 }
 
 // ── Tickets Admin ─────────────────────────────────────────────────────────────
@@ -368,5 +367,144 @@ async function adminFixCpf() {
     carregarTickets(ticketStatusFiltro);
   } catch (e) {
     toast(typeof e === 'string' ? e : 'Erro ao corrigir CPF.', true);
+  }
+}
+
+// ── Usuários Admin ────────────────────────────────────────────────────────────
+let usuarioAtual = null;
+
+document.getElementById('filtro-usuarios')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') buscarUsuarios();
+});
+
+async function buscarUsuarios() {
+  const q = document.getElementById('filtro-usuarios').value.trim();
+  const container = document.getElementById('lista-usuarios');
+  container.innerHTML = '<p class="empty">Buscando…</p>';
+  try {
+    const lista = await req('GET', `/admin/usuarios${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+    renderUsuarios(lista);
+  } catch (e) {
+    container.innerHTML = '<p class="empty">Erro ao carregar usuários.</p>';
+  }
+}
+
+const roleLabel = { user: 'Usuário', operator: 'Operador', admin: 'Admin' };
+const statusUsuarioLabel = { active: 'Ativo', inactive: 'Inativo', blocked: 'Bloqueado' };
+
+function renderUsuarios(lista) {
+  const container = document.getElementById('lista-usuarios');
+  if (!lista.length) {
+    container.innerHTML = '<p class="empty">Nenhum usuário encontrado.</p>';
+    return;
+  }
+  const rows = lista.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td>${escHtml(u.nome)} ${escHtml(u.sobrenome)}<br/><small style="color:#888">${escHtml(u.email)}</small></td>
+      <td>${u.cpf || '—'}</td>
+      <td><span class="badge badge-${u.role}">${roleLabel[u.role] || u.role}</span></td>
+      <td><span class="badge badge-${u.status}">${statusUsuarioLabel[u.status] || u.status}</span></td>
+      <td>R$ ${Number(u.saldo).toFixed(2)}</td>
+      <td><button class="btn-acao btn-ver" onclick='abrirModalUsuario(${JSON.stringify(u).replace(/"/g,"&quot;")})'>Ver / Editar</button></td>
+    </tr>
+  `).join('');
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Usuário</th><th>CPF</th><th>Cargo</th><th>Status</th><th>Saldo</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function abrirModalUsuario(u) {
+  usuarioAtual = u;
+  document.getElementById('mu-titulo').textContent = `${u.nome} ${u.sobrenome}`;
+  document.getElementById('mu-sub').textContent = `ID #${u.id} · ${u.email}`;
+  document.getElementById('mu-nome').value = u.nome;
+  document.getElementById('mu-sobrenome').value = u.sobrenome;
+  document.getElementById('mu-email').value = u.email;
+  document.getElementById('mu-cpf').value = u.cpf || '';
+  document.getElementById('mu-telefone').value = u.telefone || '';
+  document.getElementById('mu-role').value = u.role;
+  document.getElementById('mu-status').value = u.status;
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function fecharModalUsuario() {
+  document.getElementById('modal-usuario').classList.remove('open');
+  usuarioAtual = null;
+}
+
+document.getElementById('modal-usuario')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalUsuario();
+});
+
+async function salvarUsuario() {
+  const payload = {
+    nome: document.getElementById('mu-nome').value.trim(),
+    sobrenome: document.getElementById('mu-sobrenome').value.trim(),
+    email: document.getElementById('mu-email').value.trim(),
+    cpf: document.getElementById('mu-cpf').value.trim(),
+    telefone: document.getElementById('mu-telefone').value.trim() || null,
+    role: document.getElementById('mu-role').value,
+    status: document.getElementById('mu-status').value,
+  };
+  try {
+    await req('PATCH', `/admin/usuarios/${usuarioAtual.id}`, payload);
+    toast('✅ Usuário atualizado com sucesso.');
+    fecharModalUsuario();
+    buscarUsuarios();
+  } catch (e) {
+    toast(typeof e === 'string' ? e : 'Erro ao salvar usuário.', true);
+  }
+}
+
+async function excluirUsuario() {
+  if (!confirm(`Excluir permanentemente o usuário ${usuarioAtual.nome} ${usuarioAtual.sobrenome}?`)) return;
+  try {
+    await req('DELETE', `/admin/usuarios/${usuarioAtual.id}`);
+    toast('✅ Usuário excluído.');
+    fecharModalUsuario();
+    buscarUsuarios();
+  } catch (e) {
+    toast(typeof e === 'string' ? e : 'Erro ao excluir usuário.', true);
+  }
+}
+
+function abrirModalCriarUsuario() {
+  ['cu-nome','cu-sobrenome','cu-email','cu-cpf','cu-senha'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cu-role').value = 'user';
+  document.getElementById('modal-criar-usuario').classList.add('open');
+}
+
+function fecharModalCriarUsuario() {
+  document.getElementById('modal-criar-usuario').classList.remove('open');
+}
+
+document.getElementById('modal-criar-usuario')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalCriarUsuario();
+});
+
+async function criarUsuario() {
+  const payload = {
+    nome: document.getElementById('cu-nome').value.trim(),
+    sobrenome: document.getElementById('cu-sobrenome').value.trim(),
+    email: document.getElementById('cu-email').value.trim(),
+    cpf: document.getElementById('cu-cpf').value.trim(),
+    senha: document.getElementById('cu-senha').value,
+    role: document.getElementById('cu-role').value,
+  };
+  if (!payload.nome || !payload.email || !payload.cpf || !payload.senha) {
+    return toast('Preencha todos os campos obrigatórios.', true);
+  }
+  try {
+    await req('POST', '/admin/usuarios', payload);
+    toast('✅ Usuário criado com sucesso.');
+    fecharModalCriarUsuario();
+    buscarUsuarios();
+  } catch (e) {
+    toast(typeof e === 'string' ? e : 'Erro ao criar usuário.', true);
   }
 }

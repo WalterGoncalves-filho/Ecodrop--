@@ -1,11 +1,13 @@
+import re
 from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
+from app.core.security import hash_password
 from app.database import get_db
 from app.models.coleta import Agendamento, Entrega, EntregaItem, PontoColeta
 from app.models.material import Material
@@ -311,7 +313,6 @@ def admin_fix_cpf(
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
 
-    import re
     digits = re.sub(r"\D", "", data.cpf)
     if len(digits) != 11:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CPF inválido")
@@ -325,3 +326,147 @@ def admin_fix_cpf(
     user.cpf_locked = True
     db.commit()
     return {"message": "CPF corrigido com sucesso"}
+
+
+# ── Gerenciamento de Usuários ─────────────────────────────────────────────────
+
+class UserAdminResponse(BaseModel):
+    id: int
+    nome: str
+    sobrenome: str
+    email: str
+    cpf: str
+    telefone: str | None = None
+    role: str
+    status: str
+    saldo: float
+    xp_total: int
+    nivel: int
+    criado_em: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class UserAdminCreate(BaseModel):
+    nome: str
+    sobrenome: str
+    email: EmailStr
+    cpf: str
+    senha: str
+    role: str = "user"
+    status: str = "active"
+
+
+class UserAdminUpdate(BaseModel):
+    nome: str | None = None
+    sobrenome: str | None = None
+    email: EmailStr | None = None
+    cpf: str | None = None
+    telefone: str | None = None
+    role: str | None = None
+    status: str | None = None
+
+
+@router.get("/usuarios", response_model=list[UserAdminResponse])
+def admin_listar_usuarios(
+    q: str | None = Query(None, description="Filtro por nome, email ou CPF"),
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    query = db.query(User)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            User.nome.ilike(like) | User.email.ilike(like) | User.cpf.ilike(like)
+        )
+    return query.order_by(User.criado_em.desc()).all()
+
+
+@router.get("/usuarios/{user_id}", response_model=UserAdminResponse)
+def admin_get_usuario(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+    return user
+
+
+@router.post("/usuarios", response_model=UserAdminResponse, status_code=201)
+def admin_criar_usuario(
+    data: UserAdminCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    digits = re.sub(r"\D", "", data.cpf)
+    if len(digits) != 11:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CPF inválido")
+    if db.query(User).filter(User.email == data.email).first():
+        raise HTTPException(status.HTTP_409_CONFLICT, "E-mail já cadastrado")
+    if db.query(User).filter(User.cpf == digits).first():
+        raise HTTPException(status.HTTP_409_CONFLICT, "CPF já cadastrado")
+
+    user = User(
+        nome=data.nome,
+        sobrenome=data.sobrenome,
+        email=data.email,
+        cpf=digits,
+        senha=hash_password(data.senha),
+        role=data.role,
+        status=data.status,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.patch("/usuarios/{user_id}", response_model=UserAdminResponse)
+def admin_editar_usuario(
+    user_id: int,
+    data: UserAdminUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+
+    if data.email and data.email != user.email:
+        if db.query(User).filter(User.email == data.email, User.id != user_id).first():
+            raise HTTPException(status.HTTP_409_CONFLICT, "E-mail já cadastrado")
+        user.email = data.email
+
+    if data.cpf:
+        digits = re.sub(r"\D", "", data.cpf)
+        if len(digits) != 11:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "CPF inválido")
+        if db.query(User).filter(User.cpf == digits, User.id != user_id).first():
+            raise HTTPException(status.HTTP_409_CONFLICT, "CPF já cadastrado")
+        user.cpf = digits
+
+    for field in ("nome", "sobrenome", "telefone", "role", "status"):
+        val = getattr(data, field)
+        if val is not None:
+            setattr(user, field, val)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.delete("/usuarios/{user_id}", status_code=204)
+def admin_excluir_usuario(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    if user_id == admin.id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Não é possível excluir sua própria conta")
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+    db.delete(user)
+    db.commit()

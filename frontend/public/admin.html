@@ -137,6 +137,15 @@ tr:hover td{background:#f9f7f4}
 .bubble small{display:block;font-size:.7rem;color:var(--cinza);margin-bottom:4px}
 .cpf-box{background:#fff8e1;border:1.5px solid #f57f17;border-radius:10px;padding:12px 16px;margin:12px 0;font-size:.85rem}
 .cpf-box strong{color:#e65100}
+.badge-user{background:#e3f2fd;color:#1565c0}
+.badge-operator{background:#fff3e0;color:#e65100}
+.badge-admin{background:#fde8e8;color:#c0392b}
+.badge-active{background:#e8f5e9;color:#2e7d32}
+.badge-inactive{background:#f0ede8;color:#888}
+.badge-blocked{background:#fde8e8;color:#c0392b}
+.btn-acao{padding:5px 12px;border:none;border-radius:7px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-ver{background:#e3f2fd;color:#1565c0}
+.btn-ver:hover{background:#bbdefb}
 </style>
 </head>
 <body>
@@ -169,6 +178,7 @@ tr:hover td{background:#f9f7f4}
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('agendamentos')">📋 Agendamentos</button>
       <button class="tab-btn" onclick="switchTab('suporte')">🎧 Suporte</button>
+      <button class="tab-btn" onclick="switchTab('usuarios')">👥 Usuários</button>
     </div>
 
     <!-- ABA AGENDAMENTOS -->
@@ -190,6 +200,78 @@ tr:hover td{background:#f9f7f4}
         <button class="filter-btn" onclick="filtrarTickets(this,'resolved')">Resolvidos</button>
       </div>
       <div id="lista-tickets"><p class="empty">Carregando tickets…</p></div>
+    </div>
+
+    <!-- ABA USUÁRIOS -->
+    <div class="tab-panel" id="tab-usuarios">
+      <div class="search-bar">
+        <input type="text" id="filtro-usuarios" placeholder="Buscar por nome, e-mail ou CPF…"/>
+        <button onclick="buscarUsuarios()">Buscar</button>
+        <button onclick="abrirModalCriarUsuario()" style="background:var(--gv);color:var(--g1)">+ Novo usuário</button>
+      </div>
+      <div id="lista-usuarios"><p class="empty">Use a busca acima para listar usuários.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHES/EDIÇÃO USUÁRIO -->
+<div class="overlay" id="modal-usuario">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModalUsuario()">✕</button>
+    <h2 id="mu-titulo">Detalhes do Usuário</h2>
+    <p class="sub" id="mu-sub"></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="fg"><label>NOME</label><input id="mu-nome" type="text"/></div>
+      <div class="fg"><label>SOBRENOME</label><input id="mu-sobrenome" type="text"/></div>
+      <div class="fg"><label>E-MAIL</label><input id="mu-email" type="email"/></div>
+      <div class="fg"><label>CPF</label><input id="mu-cpf" type="text" maxlength="14"/></div>
+      <div class="fg"><label>TELEFONE</label><input id="mu-telefone" type="text"/></div>
+      <div class="fg"><label>CARGO</label>
+        <select id="mu-role" style="width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none">
+          <option value="user">Usuário</option>
+          <option value="operator">Operador</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="fg"><label>STATUS</label>
+        <select id="mu-status" style="width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none">
+          <option value="active">Ativo</option>
+          <option value="inactive">Inativo</option>
+          <option value="blocked">Bloqueado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancelar" onclick="fecharModalUsuario()">Cancelar</button>
+      <button class="btn-confirmar" id="mu-btn-excluir" style="background:var(--erro);flex:1" onclick="excluirUsuario()">🗑 Excluir</button>
+      <button class="btn-confirmar" onclick="salvarUsuario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRIAR USUÁRIO -->
+<div class="overlay" id="modal-criar-usuario">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModalCriarUsuario()">✕</button>
+    <h2>Novo Usuário</h2>
+    <p class="sub">Preencha os dados para criar um novo usuário</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="fg"><label>NOME</label><input id="cu-nome" type="text"/></div>
+      <div class="fg"><label>SOBRENOME</label><input id="cu-sobrenome" type="text"/></div>
+      <div class="fg"><label>E-MAIL</label><input id="cu-email" type="email"/></div>
+      <div class="fg"><label>CPF</label><input id="cu-cpf" type="text" maxlength="14"/></div>
+      <div class="fg"><label>SENHA</label><input id="cu-senha" type="password"/></div>
+      <div class="fg"><label>CARGO</label>
+        <select id="cu-role" style="width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none">
+          <option value="user">Usuário</option>
+          <option value="operator">Operador</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancelar" onclick="fecharModalCriarUsuario()">Cancelar</button>
+      <button class="btn-confirmar" onclick="criarUsuario()">Criar Usuário</button>
     </div>
   </div>
 </div>
