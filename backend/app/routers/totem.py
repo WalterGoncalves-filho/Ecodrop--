@@ -152,10 +152,12 @@ def finalizar_coleta(data: FinalizarColetaRequest, db: Session = Depends(get_db)
 
     # Gerar protocolo
     hoje = datetime.now().date()
-    count = db.query(Entrega).filter(
-        Entrega.criado_em >= datetime.combine(hoje, datetime.min.time())
-    ).count()
-    protocolo = f"TOT-{hoje.strftime('%Y%m%d')}-{count + 1:06d}"
+    seq = 1
+    while True:
+        protocolo = f"TOT-{hoje.strftime('%Y%m%d')}-{seq:06d}"
+        if not db.query(Entrega).filter(Entrega.protocolo == protocolo).first():
+            break
+        seq += 1
 
     try:
         # BEGIN TRANSACTION (implicit in SQLAlchemy)
