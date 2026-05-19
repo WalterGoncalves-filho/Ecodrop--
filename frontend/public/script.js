@@ -1909,23 +1909,7 @@ window.onload = async () => {
 
 // ── Alerta de permissão de CPF ────────────────────────────────────────────────
 async function exibirAlertaCpf() {
-  await Swal.fire({
-    icon: "success",
-    iconColor: "#27c97a",
-    title: "Chamado atendido! 🔓",
-    html: `
-      <p style="margin-bottom:12px">Seu chamado foi atendido e você tem permissão para corrigir seu CPF <strong>uma única vez</strong>.</p>
-      <p>Vá até <strong>Perfil → Editar dados</strong> e atualize seu CPF.</p>
-      <div style="margin-top:14px;background:#fff8e1;border-left:3px solid #f57f17;border-radius:8px;padding:10px 14px;text-align:left;font-size:.85rem;color:#7a4f00">
-        ⚠️ Após salvar, não será possível alterar novamente. Verifique com atenção antes de confirmar.
-      </div>
-    `,
-    confirmButtonText: "Entendido",
-    confirmButtonColor: "#145c3a",
-    background: "#fff",
-    customClass: { popup: "swal-ecodrop" },
-  });
-
+  openModal("mod-cpf-alert");
   try {
     await api.ackCpfNotification();
     const user = getProfileFormUser();
@@ -1933,33 +1917,11 @@ async function exibirAlertaCpf() {
   } catch { /* silencioso */ }
 }
 
-function fecharAlertaCpf() { /* não usado com SweetAlert2 */ }
+function fecharAlertaCpf() {
+  closeModal("mod-cpf-alert");
+}
 
 // ── Termos de Uso ─────────────────────────────────────────────────────────────
 function abrirTermosDeUso() {
-  Swal.fire({
-    title: "📄 Termos de Uso",
-    html: `
-      <div style="text-align:left;font-size:.82rem;line-height:1.6;color:#333;max-height:40vh;overflow-y:auto;padding-right:6px">
-        <h4 style="color:#0a2e1f;margin-bottom:4px">1. Sobre o EcoDrop</h4>
-        <p>Plataforma de reciclagem que conecta usuários a pontos de coleta, recompensando boas práticas com EcoPoints (VoucherVerde).</p>
-        <h4 style="color:#0a2e1f;margin:10px 0 4px">2. Uso da plataforma</h4>
-        <p>Uso pessoal e intransferível. Proibido cadastrar informações falsas ou manipular o sistema de pontuação.</p>
-        <h4 style="color:#0a2e1f;margin:10px 0 4px">3. EcoPoints e Vouchers</h4>
-        <p>Créditos virtuais por entregas validadas, sem valor monetário direto. Utilizáveis apenas nos parceiros cadastrados.</p>
-        <h4 style="color:#0a2e1f;margin:10px 0 4px">4. Dados pessoais (LGPD)</h4>
-        <p>Coletamos nome, e-mail, CPF e endereço para operação do serviço. Dados não são vendidos. Exclusão de conta via suporte.</p>
-        <h4 style="color:#0a2e1f;margin:10px 0 4px">5. Agendamentos</h4>
-        <p>Não comparecimento pode resultar em restrição temporária de novos agendamentos.</p>
-        <h4 style="color:#0a2e1f;margin:10px 0 4px">6. Alterações</h4>
-        <p>Termos podem ser atualizados com notificação pelo aplicativo.</p>
-        <p style="margin-top:12px;color:#aaa;font-size:.75rem">Atualizado em maio de 2026 · contato@ecodrop.app</p>
-      </div>
-    `,
-    confirmButtonText: "Li e entendi",
-    confirmButtonColor: "#145c3a",
-    background: "#fff",
-    width: "min(480px, 92vw)",
-    customClass: { popup: "swal-ecodrop" },
-  });
+  openModal("mod-termos");
 }
