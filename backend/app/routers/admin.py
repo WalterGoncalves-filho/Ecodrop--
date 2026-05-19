@@ -9,6 +9,7 @@ from app.core.dependencies import get_current_user
 from app.database import get_db
 from app.models.coleta import Agendamento, Entrega, EntregaItem, PontoColeta
 from app.models.material import Material
+from app.models.suporte import InteracaoSuporte, TicketSuporte
 from app.models.user import User
 from app.services.voucher_service import creditar
 
@@ -164,3 +165,163 @@ def listar_materiais(
 ):
     materiais = db.query(Material).filter(Material.status == "active").all()
     return [{"id": m.id, "nome": m.nome, "unidade": m.unidade, "pontos_por_unidade": m.pontos_por_unidade} for m in materiais]
+
+
+# ── Suporte / Tickets ─────────────────────────────────────────────────────────
+
+class TicketAdminResponse(BaseModel):
+    id: int
+    usuario_id: int
+    usuario_nome: str
+    usuario_email: str
+    usuario_cpf: str
+    category: str
+    subject: str
+    status: str
+    priority: str
+    createdAt: datetime
+    updatedAt: datetime
+    interactionCount: int
+    messages: list[dict] = []
+
+    model_config = {"from_attributes": True}
+
+
+class AdminReplyInput(BaseModel):
+    message: str
+    new_status: str | None = None  # open | in_progress | resolved | closed
+
+
+class GrantCpfInput(BaseModel):
+    ticket_id: int | None = None  # fecha o ticket junto, se informado
+
+
+class AdminFixCpfInput(BaseModel):
+    cpf: str
+
+
+@router.get("/tickets", response_model=list[TicketAdminResponse])
+def admin_listar_tickets(
+    status_filter: str | None = Query(None, alias="status"),
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    q = db.query(TicketSuporte).join(TicketSuporte.usuario)
+    if status_filter:
+        q = q.filter(TicketSuporte.status == status_filter)
+    tickets = q.order_by(TicketSuporte.atualizado_em.desc()).all()
+    return [
+        TicketAdminResponse(
+            id=t.id,
+            usuario_id=t.usuario_id,
+            usuario_nome=f"{t.usuario.nome} {t.usuario.sobrenome}".strip(),
+            usuario_email=t.usuario.email,
+            usuario_cpf=t.usuario.cpf or "",
+            category=t.categoria,
+            subject=t.assunto,
+            status=t.status,
+            priority=t.prioridade,
+            createdAt=t.criado_em,
+            updatedAt=t.atualizado_em,
+            interactionCount=len(t.interacoes),
+            messages=[
+                {"id": i.id, "authorId": i.autor_id, "authorName": i.autor.nome,
+                 "message": i.mensagem, "createdAt": i.criado_em.isoformat()}
+                for i in t.interacoes
+            ],
+        )
+        for t in tickets
+    ]
+
+
+@router.post("/tickets/{ticket_id}/reply", response_model=TicketAdminResponse)
+def admin_responder_ticket(
+    ticket_id: int,
+    data: AdminReplyInput,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    ticket = db.get(TicketSuporte, ticket_id)
+    if not ticket:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Ticket não encontrado")
+
+    db.add(InteracaoSuporte(ticket_id=ticket.id, autor_id=admin.id, mensagem=data.message))
+
+    if data.new_status:
+        ticket.status = data.new_status
+    elif ticket.status == "open":
+        ticket.status = "in_progress"
+
+    db.commit()
+    db.refresh(ticket)
+
+    return TicketAdminResponse(
+        id=ticket.id,
+        usuario_id=ticket.usuario_id,
+        usuario_nome=f"{ticket.usuario.nome} {ticket.usuario.sobrenome}".strip(),
+        usuario_email=ticket.usuario.email,
+        usuario_cpf=ticket.usuario.cpf or "",
+        category=ticket.categoria,
+        subject=ticket.assunto,
+        status=ticket.status,
+        priority=ticket.prioridade,
+        createdAt=ticket.criado_em,
+        updatedAt=ticket.atualizado_em,
+        interactionCount=len(ticket.interacoes),
+        messages=[
+            {"id": i.id, "authorId": i.autor_id, "authorName": i.autor.nome,
+             "message": i.mensagem, "createdAt": i.criado_em.isoformat()}
+            for i in ticket.interacoes
+        ],
+    )
+
+
+@router.post("/users/{user_id}/grant-cpf-edit")
+def admin_grant_cpf_edit(
+    user_id: int,
+    data: GrantCpfInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+
+    user.cpf_edit_allowed = True
+    user.cpf_notified = False  # garante que o alerta será exibido
+
+    if data.ticket_id:
+        ticket = db.get(TicketSuporte, data.ticket_id)
+        if ticket and ticket.usuario_id == user_id:
+            ticket.status = "resolved"
+
+    db.commit()
+    return {"message": "Permissão de edição de CPF concedida"}
+
+
+@router.patch("/users/{user_id}/fix-cpf")
+def admin_fix_cpf(
+    user_id: int,
+    data: AdminFixCpfInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(_require_admin),
+):
+    """Admin corrige o CPF diretamente, sem passar pela permissão do usuário."""
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+
+    import re
+    digits = re.sub(r"\D", "", data.cpf)
+    if len(digits) != 11:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CPF inválido")
+
+    existing = db.query(User).filter(User.cpf == digits, User.id != user_id).first()
+    if existing:
+        raise HTTPException(status.HTTP_409_CONFLICT, "CPF já cadastrado em outra conta")
+
+    user.cpf = digits
+    user.cpf_edit_allowed = False
+    user.cpf_locked = True
+    db.commit()
+    return {"message": "CPF corrigido com sucesso"}

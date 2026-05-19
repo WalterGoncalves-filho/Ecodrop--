@@ -37,6 +37,7 @@ class UserUpdate(BaseModel):
     bairro: str | None = None
     cidade: str | None = None
     estado: str | None = None
+    cpf: str | None = None
 
 
 class UserResponse(BaseModel):
@@ -56,6 +57,9 @@ class UserResponse(BaseModel):
     saldo: float
     xp_total: int
     nivel: int
+    cpf_edit_allowed: bool = False
+    cpf_notified: bool = False
+    cpf_locked: bool = False
 
     model_config = {"from_attributes": True}
 

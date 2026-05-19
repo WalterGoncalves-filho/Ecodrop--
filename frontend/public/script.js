@@ -1348,6 +1348,15 @@ function openProfileEditModal() {
   document.getElementById("up-email").value = user.email || "";
   document.getElementById("up-senha-atual").value = "";
 
+  // Mostrar campo CPF apenas se o usuário tiver permissão e CPF não estiver bloqueado
+  const cpfSection = document.getElementById("cpf-edit-section");
+  if (user.cpf_edit_allowed && !user.cpf_locked) {
+    cpfSection.style.display = "block";
+    document.getElementById("up-cpf").value = "";
+  } else {
+    cpfSection.style.display = "none";
+  }
+
   openModal("mod-profile-edit");
 }
 
@@ -1402,6 +1411,15 @@ async function salvarPerfil() {
 
   if (currentPassword) {
     payload.senhaAtual = currentPassword;
+  }
+
+  // Incluir CPF se o campo estiver visível e preenchido
+  const cpfSection = document.getElementById("cpf-edit-section");
+  if (cpfSection && cpfSection.style.display !== "none") {
+    const cpfVal = document.getElementById("up-cpf").value.trim();
+    if (cpfVal) {
+      payload.cpf = cpfVal.replace(/\D/g, "");
+    }
   }
 
   saveButton.disabled = true;
@@ -1760,6 +1778,10 @@ async function fazerLogin() {
     await carregarSessao();
     showToast("✅ Login realizado!");
     goTo("home");
+    // Alerta de permissão de CPF — exibe apenas uma vez
+    if (user.cpf_edit_allowed && !user.cpf_notified) {
+      setTimeout(() => exibirAlertaCpf(), 800);
+    }
   } catch (error) {
     showToast(error?.detail || "Email ou senha inválidos.");
   }
@@ -1884,3 +1906,66 @@ window.onload = async () => {
   updateRoleActions(null);
   goTo("splash");
 };
+
+// ── Alerta de permissão de CPF ────────────────────────────────────────────────
+async function exibirAlertaCpf() {
+  await Swal.fire({
+    icon: "success",
+    iconColor: "#27c97a",
+    title: "Chamado atendido! 🔓",
+    html: `
+      <p style="margin-bottom:12px">Seu chamado foi atendido e você tem permissão para corrigir seu CPF <strong>uma única vez</strong>.</p>
+      <p>Vá até <strong>Perfil → Editar dados</strong> e atualize seu CPF.</p>
+      <div style="margin-top:14px;background:#fff8e1;border-left:3px solid #f57f17;border-radius:8px;padding:10px 14px;text-align:left;font-size:.85rem;color:#7a4f00">
+        ⚠️ Após salvar, não será possível alterar novamente. Verifique com atenção antes de confirmar.
+      </div>
+    `,
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#145c3a",
+    background: "#fff",
+    customClass: { popup: "swal-ecodrop" },
+  });
+
+  try {
+    await api.ackCpfNotification();
+    const user = getProfileFormUser();
+    if (user) user.cpf_notified = true;
+  } catch { /* silencioso */ }
+}
+
+function fecharAlertaCpf() { /* não usado com SweetAlert2 */ }
+
+// ── Termos de Uso ─────────────────────────────────────────────────────────────
+function abrirTermosDeUso() {
+  Swal.fire({
+    title: "📄 Termos de Uso & Política de Privacidade",
+    html: `
+      <div style="text-align:left;font-size:.83rem;line-height:1.7;color:#333;max-height:55vh;overflow-y:auto;padding-right:4px">
+        <h4 style="color:#0a2e1f;margin-bottom:6px">1. Sobre o EcoDrop</h4>
+        <p>O EcoDrop é uma plataforma de reciclagem que conecta usuários a pontos de coleta, recompensando boas práticas ambientais com EcoPoints (VoucherVerde).</p>
+
+        <h4 style="color:#0a2e1f;margin:14px 0 6px">2. Uso da plataforma</h4>
+        <p>O uso é pessoal e intransferível. É proibido cadastrar informações falsas, utilizar a plataforma para fins ilícitos ou tentar manipular o sistema de pontuação.</p>
+
+        <h4 style="color:#0a2e1f;margin:14px 0 6px">3. EcoPoints e Vouchers</h4>
+        <p>Os EcoPoints são créditos virtuais concedidos por entregas validadas. Não possuem valor monetário direto e só podem ser utilizados nos parceiros cadastrados na plataforma.</p>
+
+        <h4 style="color:#0a2e1f;margin:14px 0 6px">4. Dados pessoais (LGPD)</h4>
+        <p>Coletamos nome, e-mail, CPF e endereço para identificação e operação do serviço. Seus dados não são vendidos a terceiros. Você pode solicitar exclusão da conta pelo suporte.</p>
+
+        <h4 style="color:#0a2e1f;margin:14px 0 6px">5. Agendamentos</h4>
+        <p>O não comparecimento a agendamentos confirmados pode resultar em restrição temporária de novos agendamentos.</p>
+
+        <h4 style="color:#0a2e1f;margin:14px 0 6px">6. Alterações</h4>
+        <p>Estes termos podem ser atualizados. Notificaremos usuários sobre mudanças relevantes pelo aplicativo.</p>
+
+        <p style="margin-top:16px;color:#888;font-size:.78rem">Última atualização: maio de 2026 · contato@ecodrop.app</p>
+      </div>
+    `,
+    confirmButtonText: "Li e entendi",
+    confirmButtonColor: "#145c3a",
+    background: "#fff",
+    width: "min(520px, 95vw)",
+    customClass: { popup: "swal-ecodrop" },
+  });
+}

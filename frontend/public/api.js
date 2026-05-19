@@ -104,6 +104,7 @@ const api = {
   async getTicket(id) { return this._get(`/support/tickets/${id}`); },
   async criarTicket(dados) { return this._post('/support/tickets', dados); },
   async responderTicket(id, message) { return this._post(`/support/tickets/${id}/messages`, { message }); },
+  async ackCpfNotification() { return this._patch('/users/me/ack-cpf-notification'); },
 
   // Totem
   async totemValidarCpf(cpf) { return this._post('/totem/validar-cpf', { cpf }); },

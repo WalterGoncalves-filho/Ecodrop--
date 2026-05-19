@@ -1646,3 +1646,8 @@ body {
   display: block;
   animation: fadeUp 0.28s ease;
 }
+
+/* ── SweetAlert2 EcoDrop ── */
+.swal-ecodrop { font-family: "Sora", sans-serif !important; border-radius: 20px !important; }
+.swal-ecodrop .swal2-title { color: #0a2e1f; font-size: 1.15rem; }
+.swal-ecodrop .swal2-html-container { font-size: .88rem; color: #444; line-height: 1.6; }

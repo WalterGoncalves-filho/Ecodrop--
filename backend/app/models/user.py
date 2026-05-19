@@ -34,6 +34,9 @@ class User(Base, TimestampMixin):
     saldo: Mapped[float] = mapped_column(DECIMAL(10, 2), nullable=False, default=0.00)
     nivel: Mapped[int] = mapped_column(nullable=False, default=1)
     xp_total: Mapped[int] = mapped_column(nullable=False, default=0)
+    cpf_edit_allowed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    cpf_notified: Mapped[bool] = mapped_column(nullable=False, default=False)
+    cpf_locked: Mapped[bool] = mapped_column(nullable=False, default=False)
 
     transacoes: Mapped[list["Transacao"]] = relationship(back_populates="usuario")  # noqa: F821
     agendamentos: Mapped[list["Agendamento"]] = relationship(back_populates="usuario")  # noqa: F821
