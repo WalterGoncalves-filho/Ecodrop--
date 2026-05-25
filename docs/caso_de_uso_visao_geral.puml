@@ -1,0 +1,135 @@
+@startuml EcoDrop_CasosDeUso_Geral
+!pragma layout elk
+
+title Diagrama de Casos de Uso -- EcoDrop v2\n(Visao Geral)
+
+skinparam usecase {
+  BackgroundColor WhiteSmoke
+  BorderColor #4CAF50
+  ArrowColor #388E3C
+  ActorBorderColor #1B5E20
+  ActorFontSize 14
+  FontSize 12
+}
+skinparam package {
+  BackgroundColor #F1F8E9
+  BorderColor #AED581
+  FontSize 12
+  FontStyle bold
+}
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+}
+
+' =====================
+'  ATORES
+' =====================
+actor "Reciclador"    as User
+actor "Operador"      as Operator
+actor "Administrador" as Admin
+actor "Totem\n(Sistema Fisico)" as Totem
+
+Admin -up-|> Operator
+
+' =====================
+'  CASOS DE USO
+' =====================
+
+package "Autenticacao" {
+  (Registrar Conta)  as UC1
+  (Realizar Login)   as UC2
+}
+
+package "Coleta e Agendamento" {
+  (Buscar Pontos de Coleta) as UC3
+  (Criar Agendamento)       as UC4
+  (Cancelar Agendamento)    as UC5
+}
+
+package "Entregas" {
+  (Registrar Entrega)    as UC6
+  (Confirmar Entrega)    as UC7
+  (Rejeitar Entrega)     as UC8
+  (Creditar Saldo e XP)  as UC9
+}
+
+package "Carteira VoucherVerde" {
+  (Consultar Saldo e Nivel) as UC10
+  (Resgatar Beneficio)      as UC11
+}
+
+package "Missoes e Gamificacao" {
+  (Consultar Missoes Ativas)   as UC12
+  (Concluir Missao)            as UC13
+}
+
+package "Suporte" {
+  (Abrir Ticket)    as UC14
+  (Responder Ticket) as UC15
+}
+
+package "Totem de Autoatendimento" {
+  (Validar CPF)            as UC16
+  (Registrar Coleta Auto.) as UC17
+}
+
+package "Painel Administrativo" {
+  (Validar Coleta Presencial)  as UC18
+  (Listar Agendamentos)        as UC19
+}
+
+' =====================
+'  ASSOCIACOES
+' =====================
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC10
+User --> UC11
+User --> UC12
+User --> UC14
+User --> UC15
+
+Operator --> UC2
+Operator --> UC7
+Operator --> UC8
+
+Admin --> UC18
+Admin --> UC19
+
+Totem --> UC16
+Totem --> UC17
+
+' =====================
+'  INCLUDE / EXTEND
+' =====================
+
+UC6  .> UC9  : <<include>>
+UC7  .> UC9  : <<include>>
+UC17 .> UC9  : <<include>>
+UC18 .> UC9  : <<include>>
+UC13 .> UC12 : <<extend>>
+
+' =====================
+'  NOTAS
+' =====================
+
+note as N1
+  Totem: sem autenticacao JWT.
+  Identificacao por CPF.
+  Confirmacao automatica (ACID).
+end note
+N1 .. UC16
+
+note as N2
+  Admin herda permissoes do
+  Operador + acesso total.
+end note
+N2 .. Admin
+
+@enduml

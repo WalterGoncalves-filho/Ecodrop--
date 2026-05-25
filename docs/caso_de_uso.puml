@@ -1,0 +1,234 @@
+@startuml EcoDrop_CasosDeUso
+!pragma layout elk
+
+title Diagrama de Casos de Uso -- EcoDrop v2
+
+skinparam usecase {
+  BackgroundColor WhiteSmoke
+  BorderColor #4CAF50
+  ArrowColor #388E3C
+  ActorBorderColor #1B5E20
+  ActorFontSize 13
+  FontSize 12
+}
+skinparam package {
+  BackgroundColor #F1F8E9
+  BorderColor #AED581
+  FontSize 12
+  FontStyle bold
+}
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+}
+
+' ==========================================================
+'  ATORES
+' ==========================================================
+
+actor "Reciclador"    as User
+actor "Operador"      as Operator
+actor "Administrador" as Admin
+actor "Totem\n(Sistema Fisico)" as Totem
+
+Admin -up-|> Operator
+
+' ==========================================================
+'  CASOS DE USO
+' ==========================================================
+
+package "Autenticacao" {
+  (Registrar Conta)           as UC_Register
+  (Realizar Login)            as UC_Login
+  (Renovar Token de Acesso)   as UC_Refresh
+  (Realizar Logout)           as UC_Logout
+}
+
+package "Gestao de Perfil" {
+  (Consultar Perfil Proprio)           as UC_Profile
+  (Atualizar Dados Cadastrais)         as UC_UpdateProfile
+  (Preencher Endereco por CEP)         as UC_CEP
+  (Alterar Senha)                      as UC_ChangePassword
+  (Consultar Estatisticas)             as UC_Stats
+}
+
+package "Pontos de Coleta" {
+  (Buscar Pontos de Coleta)      as UC_Points
+  (Filtrar por Material)         as UC_FilterMaterial
+  (Filtrar por Cidade)           as UC_FilterCity
+  (Consultar Detalhes do Ponto)  as UC_PointDetail
+}
+
+package "Agendamento" {
+  (Criar Agendamento)           as UC_Schedule
+  (Consultar Meus Agendamentos) as UC_MySchedules
+  (Cancelar Agendamento)        as UC_CancelSchedule
+}
+
+package "Registro e Validacao de Entregas" {
+  (Registrar Entrega)               as UC_CreateDelivery
+  (Consultar Historico de Entregas) as UC_Deliveries
+  (Calcular Pontos e Valor do Item) as UC_CalcPoints
+  (Gerar Protocolo de Entrega)      as UC_Protocol
+  (Revisar Entrega Pendente)        as UC_ReviewDelivery
+  (Confirmar Entrega)               as UC_ConfirmDelivery
+  (Rejeitar Entrega)                as UC_RejectDelivery
+  (Creditar Saldo e XP)             as UC_CreditBalance
+  (Atualizar Progresso de Missoes)  as UC_UpdateMissions
+}
+
+package "Carteira VoucherVerde" {
+  (Consultar Saldo e Nivel)           as UC_Balance
+  (Consultar Historico de Transacoes) as UC_Transactions
+  (Resgatar Beneficio)                as UC_Redeem
+  (Verificar Saldo Disponivel)        as UC_CheckBalance
+  (Gerar Codigo de Voucher)           as UC_GenVoucher
+}
+
+package "Parceiros e Beneficios" {
+  (Consultar Parceiros)              as UC_Partners
+  (Consultar Beneficios do Parceiro) as UC_Benefits
+}
+
+package "Missoes e Gamificacao" {
+  (Consultar Missoes Ativas)              as UC_Missions
+  (Acompanhar Progresso de Missao)        as UC_MissionProgress
+  (Concluir Missao e Creditar Recompensa) as UC_CompleteMission
+}
+
+package "Suporte ao Usuario" {
+  (Abrir Ticket de Suporte) as UC_CreateTicket
+  (Consultar Meus Tickets)  as UC_Tickets
+  (Responder Ticket)        as UC_ReplyTicket
+}
+
+package "Totem de Autoatendimento" {
+  (Validar CPF do Usuario)        as UC_ValidateCPF
+  (Registrar Coleta Automatizada) as UC_TotemDelivery
+  (Consultar Historico no Totem)  as UC_TotemHistory
+  (Consultar Missao Ativa Global) as UC_TotemMission
+}
+
+package "Painel Administrativo" {
+  (Listar Agendamentos em Aberto) as UC_AdminSchedules
+  (Validar Coleta Presencial)     as UC_AdminValidate
+  (Listar Materiais Cadastrados)  as UC_AdminMaterials
+}
+
+' ==========================================================
+'  ASSOCIACOES — RECICLADOR
+' ==========================================================
+
+User --> UC_Register
+User --> UC_Login
+User --> UC_Refresh
+User --> UC_Logout
+
+User --> UC_Profile
+User --> UC_UpdateProfile
+User --> UC_ChangePassword
+User --> UC_Stats
+
+User --> UC_Points
+User --> UC_PointDetail
+
+User --> UC_Schedule
+User --> UC_MySchedules
+User --> UC_CancelSchedule
+
+User --> UC_CreateDelivery
+User --> UC_Deliveries
+
+User --> UC_Balance
+User --> UC_Transactions
+User --> UC_Redeem
+
+User --> UC_Partners
+User --> UC_Benefits
+
+User --> UC_Missions
+User --> UC_MissionProgress
+
+User --> UC_CreateTicket
+User --> UC_Tickets
+User --> UC_ReplyTicket
+
+' ==========================================================
+'  ASSOCIACOES — OPERADOR
+' ==========================================================
+
+Operator --> UC_Login
+Operator --> UC_ReviewDelivery
+Operator --> UC_ConfirmDelivery
+Operator --> UC_RejectDelivery
+
+' ==========================================================
+'  ASSOCIACOES — ADMINISTRADOR
+' ==========================================================
+
+Admin --> UC_AdminSchedules
+Admin --> UC_AdminValidate
+Admin --> UC_AdminMaterials
+
+' ==========================================================
+'  ASSOCIACOES — TOTEM
+' ==========================================================
+
+Totem --> UC_ValidateCPF
+Totem --> UC_TotemDelivery
+Totem --> UC_TotemHistory
+Totem --> UC_TotemMission
+
+' ==========================================================
+'  RELACIONAMENTOS <<include>>
+' ==========================================================
+
+UC_UpdateProfile   .> UC_CEP             : <<include>>
+
+UC_CreateDelivery  .> UC_CalcPoints      : <<include>>
+UC_CreateDelivery  .> UC_Protocol        : <<include>>
+
+UC_ReviewDelivery  .> UC_ConfirmDelivery : <<include>>
+UC_ReviewDelivery  .> UC_RejectDelivery  : <<include>>
+
+UC_ConfirmDelivery .> UC_CreditBalance   : <<include>>
+UC_ConfirmDelivery .> UC_UpdateMissions  : <<include>>
+
+UC_AdminValidate   .> UC_Protocol        : <<include>>
+UC_AdminValidate   .> UC_CreditBalance   : <<include>>
+UC_AdminValidate   .> UC_UpdateMissions  : <<include>>
+
+UC_TotemDelivery   .> UC_Protocol        : <<include>>
+UC_TotemDelivery   .> UC_CreditBalance   : <<include>>
+UC_TotemDelivery   .> UC_UpdateMissions  : <<include>>
+
+UC_Redeem          .> UC_CheckBalance    : <<include>>
+UC_Redeem          .> UC_GenVoucher      : <<include>>
+
+' ==========================================================
+'  RELACIONAMENTOS <<extend>>
+' ==========================================================
+
+UC_FilterMaterial  .> UC_Points         : <<extend>>
+UC_FilterCity      .> UC_Points         : <<extend>>
+
+UC_CompleteMission .> UC_UpdateMissions : <<extend>>
+
+' ==========================================================
+'  NOTAS
+' ==========================================================
+
+note as N_Totem
+  Totem: sem autenticacao JWT.
+  Identificacao via CPF.
+  Entrega confirmada automaticamente (ACID).
+end note
+N_Totem .. UC_ValidateCPF
+
+note as N_Admin
+  Admin herda permissoes do Operador
+  e tem acesso irrestrito ao sistema.
+end note
+N_Admin .. Admin
+
+@enduml

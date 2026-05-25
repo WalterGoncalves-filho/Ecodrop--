@@ -1,0 +1,81 @@
+@startuml EcoDrop_Coleta
+!pragma layout elk
+title Fluxo de Coleta e Entregas -- EcoDrop v2
+
+skinparam usecase { BackgroundColor WhiteSmoke; BorderColor #4CAF50; ArrowColor #388E3C; ActorBorderColor #1B5E20; FontSize 12 }
+skinparam package { BackgroundColor #F1F8E9; BorderColor #AED581; FontStyle bold }
+
+actor "Reciclador" as User
+actor "Operador"   as Operator
+actor "Administrador" as Admin
+Admin -up-|> Operator
+
+package "Pontos de Coleta" {
+  (Buscar Pontos de Coleta)     as UC_Points
+  (Filtrar por Material)        as UC_FMat
+  (Filtrar por Cidade)          as UC_FCid
+  (Consultar Detalhes do Ponto) as UC_PointDtl
+}
+
+package "Agendamento" {
+  (Criar Agendamento)           as UC_Sched
+  (Consultar Meus Agendamentos) as UC_MySched
+  (Cancelar Agendamento)        as UC_CancelSched
+}
+
+package "Registro e Validacao de Entregas" {
+  (Registrar Entrega)               as UC_Create
+  (Consultar Historico de Entregas) as UC_History
+  (Calcular Pontos e Valor do Item) as UC_Calc
+  (Gerar Protocolo de Entrega)      as UC_Proto
+  (Revisar Entrega Pendente)        as UC_Review
+  (Confirmar Entrega)               as UC_Confirm
+  (Rejeitar Entrega)                as UC_Reject
+  (Creditar Saldo e XP)             as UC_Credit
+  (Atualizar Progresso de Missoes)  as UC_UpdMiss
+}
+
+package "Painel Administrativo" {
+  (Listar Agendamentos em Aberto) as UC_AdminList
+  (Validar Coleta Presencial)     as UC_AdminVal
+  (Listar Materiais Cadastrados)  as UC_AdminMat
+}
+
+User     --> UC_Points
+User     --> UC_PointDtl
+User     --> UC_Sched
+User     --> UC_MySched
+User     --> UC_CancelSched
+User     --> UC_Create
+User     --> UC_History
+
+Operator --> UC_Review
+Operator --> UC_Confirm
+Operator --> UC_Reject
+
+Admin    --> UC_AdminList
+Admin    --> UC_AdminVal
+Admin    --> UC_AdminMat
+
+UC_FMat  .> UC_Points  : <<extend>>
+UC_FCid  .> UC_Points  : <<extend>>
+
+UC_Create    .> UC_Calc   : <<include>>
+UC_Create    .> UC_Proto  : <<include>>
+
+UC_Review    .> UC_Confirm : <<include>>
+UC_Review    .> UC_Reject  : <<include>>
+
+UC_Confirm   .> UC_Credit  : <<include>>
+UC_Confirm   .> UC_UpdMiss : <<include>>
+
+UC_AdminVal  .> UC_Proto   : <<include>>
+UC_AdminVal  .> UC_Credit  : <<include>>
+UC_AdminVal  .> UC_UpdMiss : <<include>>
+
+note as N1
+  Status da entrega:
+  pending_confirmation → confirmed / rejected
+  Admin cria ja em confirmed (bypass operador).
+end note
+N1 .. UC_Review
